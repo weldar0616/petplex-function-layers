@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -65,22 +64,7 @@ func convertStoreToDynamoDBItem(store *Store) map[string]types.AttributeValue {
 	return item
 }
 
-// BatchSaveStore はDynamoDBに単一の店舗情報を保存します。
-func BatchSaveStore(ctx context.Context, client *dynamodb.Client, tableName string, store *Store) error {
-	item := convertStoreToDynamoDBItem(store)
-
-	_, err := client.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(tableName),
-		Item:      item,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to put item into DynamoDB: %w", err)
-	}
-
-	return nil
-}
-
-func BatchSavePetDetails(ctx context.Context, client *dynamodb.Client, tableName string, stores []*Store) error {
+func BatchSaveStores(ctx context.Context, client *dynamodb.Client, tableName string, stores []*Store) error {
 	// DynamoDBにバッチで書き込みます。1回のバッチにつき最大25項目まで。
 	for i := 0; i < len(stores); i += 25 {
 		end := i + 25
