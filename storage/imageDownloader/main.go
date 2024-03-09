@@ -6,25 +6,18 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-// NOTE: HTTPレスポンスのボディを直接アップロードしようとしたところエラーが発生したので、一時ファイルを作成してそれをアップロードすることで解決
-// {
-//   "errorMessage": "operation error S3: PutObject, https response error StatusCode: 501, RequestID: XXX, HostID: YYY, api error NotImplemented: A header you provided implies functionality that is not implemented",
-//   "errorType": "OperationError"
-// }
-
-// ImageDownloader is a struct to hold necessary AWS clients and configurations.
 type ImageDownloader struct {
 	S3Client *s3.Client
 	Bucket   string
 }
 
-// NewImageDownloader creates a new ImageDownloader instance.
 func NewImageDownloader(ctx context.Context, bucketName string, awsRegion string) (*ImageDownloader, error) {
 	if bucketName == "" {
 		return nil, fmt.Errorf("bucket name is not set")
@@ -41,32 +34,52 @@ func NewImageDownloader(ctx context.Context, bucketName string, awsRegion string
 	}, nil
 }
 
-// DownloadAndUploadImage downloads an image from a URL and uploads it to the configured S3 bucket.
 func (d *ImageDownloader) DownloadAndUploadImage(ctx context.Context, imageUrl, fileName string) error {
-	resp, err := downloadImage(imageUrl)
+	// 画像をダウンロードして一時ファイルに保存
+	tempFilePath, err := downloadImageToTempFile(imageUrl)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer os.Remove(tempFilePath) // Clean up the temp file later
 
-	return uploadImageToS3(ctx, d.S3Client, d.Bucket, fileName, resp.Body)
+	// 一時ファイルを開く
+	file, err := os.Open(tempFilePath)
+	if err != nil {
+		return fmt.Errorf("unable to open temp file: %w", err)
+	}
+	defer file.Close()
+
+	// 一時ファイルをS3にアップロード
+	return uploadImageToS3(ctx, d.S3Client, d.Bucket, fileName, file)
 }
 
-// downloadImage performs an HTTP GET request for the given URL and returns the response.
-func downloadImage(url string) (*http.Response, error) {
+func downloadImageToTempFile(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("download error: %w", err)
+		return "", fmt.Errorf("download error: %w", err)
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close() // Close the body to avoid resource leaks
-		return nil, fmt.Errorf("non-OK HTTP status code: %d", resp.StatusCode)
+		return "", fmt.Errorf("non-OK HTTP status code: %d", resp.StatusCode)
 	}
 
-	return resp, nil
+	// 一時ファイルを作成
+	tempFile, err := os.CreateTemp("", "image-*.jpg")
+	if err != nil {
+		return "", fmt.Errorf("unable to create temp file: %w", err)
+	}
+	defer tempFile.Close()
+
+	// レスポンスボディをファイルに書き込む
+	_, err = io.Copy(tempFile, resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to write to temp file: %w", err)
+	}
+
+	return tempFile.Name(), nil
 }
 
-// uploadImageToS3 uploads the given image (as an io.Reader) to the specified S3 bucket and key.
 func uploadImageToS3(ctx context.Context, client *s3.Client, bucket, key string, body io.Reader) error {
 	_, err := client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
