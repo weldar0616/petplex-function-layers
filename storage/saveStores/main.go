@@ -65,8 +65,8 @@ func convertStoreToDynamoDBItem(store *Store) map[string]types.AttributeValue {
 	return item
 }
 
-// SaveStore はDynamoDBに単一の店舗情報を保存します。
-func SaveStore(ctx context.Context, client *dynamodb.Client, tableName string, store *Store) error {
+// BatchSaveStore はDynamoDBに単一の店舗情報を保存します。
+func BatchSaveStore(ctx context.Context, client *dynamodb.Client, tableName string, store *Store) error {
 	item := convertStoreToDynamoDBItem(store)
 
 	_, err := client.PutItem(ctx, &dynamodb.PutItemInput{
@@ -75,6 +75,33 @@ func SaveStore(ctx context.Context, client *dynamodb.Client, tableName string, s
 	})
 	if err != nil {
 		return fmt.Errorf("failed to put item into DynamoDB: %w", err)
+	}
+
+	return nil
+}
+
+func BatchSavePetDetails(ctx context.Context, client *dynamodb.Client, tableName string, stores []*Store) error {
+	// DynamoDBにバッチで書き込みます。1回のバッチにつき最大25項目まで。
+	for i := 0; i < len(stores); i += 25 {
+		end := i + 25
+		if end > len(stores) {
+			end = len(stores)
+		}
+
+		writeRequests := make([]types.WriteRequest, 0, len(stores[i:end]))
+		for _, petDetail := range stores[i:end] {
+			item := convertStoreToDynamoDBItem(petDetail)
+			writeRequests = append(writeRequests, types.WriteRequest{
+				PutRequest: &types.PutRequest{Item: item},
+			})
+		}
+
+		_, err := client.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
+			RequestItems: map[string][]types.WriteRequest{tableName: writeRequests},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to batch write items: %v", err)
+		}
 	}
 
 	return nil
