@@ -10,16 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/joho/godotenv"
 )
 
 // DownloadAndUploadImage downloads an image from a URL and uploads it to an S3 bucket.
 func DownloadAndUploadImage(ctx context.Context, imageUrl string, fileName string, bucketName string) error {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("ap-northeast-1"))
 	if err != nil {
 		return fmt.Errorf("unable to load SDK config: %w", err)

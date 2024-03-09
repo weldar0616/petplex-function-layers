@@ -2,10 +2,7 @@ module github.com/weldar0616/petplex-function-layers/storage/imageDownloader
 
 go 1.21.3
 
-require (
-	github.com/aws/aws-sdk-go-v2/config v1.27.7
-	github.com/joho/godotenv v1.5.1
-)
+require github.com/aws/aws-sdk-go-v2/config v1.27.7
 
 require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.1 // indirect
