@@ -58,7 +58,7 @@ func convertPetDetailToDynamoDBItem(petDetail *PetDetail) map[string]types.Attri
 		"companyID":   &types.AttributeValueMemberS{Value: petDetail.CompanyID},
 		"storeID":     &types.AttributeValueMemberS{Value: petDetail.StoreID},
 		"petID":       &types.AttributeValueMemberS{Value: petDetail.PetID},
-		"petType":     &types.AttributeValueMemberS{Value: petDetail.PetType},
+		"petType":     &types.AttributeValueMemberS{Value: string(petDetail.PetType)},
 		"type":        &types.AttributeValueMemberS{Value: petDetail.Type},
 		"priceExTax":  &types.AttributeValueMemberN{Value: fmt.Sprintf("%.2f", petDetail.PriceExTax)},
 		"priceIncTax": &types.AttributeValueMemberN{Value: fmt.Sprintf("%.2f", petDetail.PriceIncTax)},
@@ -84,7 +84,7 @@ func convertPetDetailToDynamoDBItem(petDetail *PetDetail) map[string]types.Attri
 	}
 
 	if petDetail.Sex != nil {
-		item["sex"] = &types.AttributeValueMemberS{Value: *petDetail.Sex}
+		item["sex"] = &types.AttributeValueMemberS{Value: string(*petDetail.Sex)}
 	}
 
 	if petDetail.Birthdate != nil {
