@@ -9,12 +9,26 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+type PetType string
+
+const (
+	Dog PetType = "Dog"
+	Cat PetType = "Cat"
+)
+
+type Sex string
+
+const (
+	Male   Sex = "Male"
+	Female Sex = "Female"
+)
+
 type PetDetail struct {
 	ID          string   `json:"id"`
 	CompanyID   string   `json:"companyID"`
 	StoreID     string   `json:"storeID"`
 	PetID       string   `json:"petID"`
-	PetType     string   `json:"petType"`
+	PetType     PetType  `json:"petType"`
 	Type        string   `json:"type"`
 	PriceExTax  float64  `json:"priceExTax"`
 	PriceIncTax float64  `json:"priceIncTax"`
@@ -22,7 +36,7 @@ type PetDetail struct {
 	Mother      *string  `json:"mother"`
 	Color       *string  `json:"color"`
 	Origin      *string  `json:"origin"`
-	Sex         *string  `json:"sex"`
+	Sex         *Sex     `json:"sex"`
 	Birthdate   *string  `json:"birthdate"`
 	Images      []string `json:"images"`
 	CrawledUrl  string   `json:"crawledUrl"`
