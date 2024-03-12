@@ -34,18 +34,18 @@ func NewImageDownloader(ctx context.Context, bucketName string, awsRegion string
 	}, nil
 }
 
-func (d *ImageDownloader) DownloadAndUploadImage(ctx context.Context, imageUrl, fileName string) error {
+func (d *ImageDownloader) DownloadAndUploadImage(ctx context.Context, imageUrl, fileName string) (string, error) {
 	// 画像をダウンロードして一時ファイルに保存
 	tempFilePath, err := downloadImageToTempFile(imageUrl)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer os.Remove(tempFilePath) // Clean up the temp file later
 
 	// 一時ファイルを開く
 	file, err := os.Open(tempFilePath)
 	if err != nil {
-		return fmt.Errorf("unable to open temp file: %w", err)
+		return "", fmt.Errorf("unable to open temp file: %w", err)
 	}
 	defer file.Close()
 
@@ -80,16 +80,17 @@ func downloadImageToTempFile(url string) (string, error) {
 	return tempFile.Name(), nil
 }
 
-func uploadImageToS3(ctx context.Context, client *s3.Client, bucket, key string, body io.Reader) error {
+func uploadImageToS3(ctx context.Context, client *s3.Client, bucket, key string, body io.Reader) (string, error) {
+	objectKey := fmt.Sprintf("images/%s", key)
 	_, err := client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(fmt.Sprintf("images/%s", key)),
+		Key:    aws.String(objectKey),
 		Body:   body,
 	})
 	if err != nil {
-		return fmt.Errorf("upload error: %w", err)
+		return "", fmt.Errorf("upload error: %w", err)
 	}
 
 	log.Printf("Image uploaded successfully to %s/%s", bucket, key)
-	return nil
+	return objectKey, nil
 }
