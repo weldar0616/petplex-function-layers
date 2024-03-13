@@ -24,7 +24,6 @@ const (
 )
 
 type PetDetail struct {
-	ID          string   `json:"id"`
 	CompanyID   string   `json:"companyID"`
 	StoreID     string   `json:"storeID"`
 	PetID       string   `json:"petID"`
@@ -54,7 +53,6 @@ func CreateDynamoDBClient(ctx context.Context, awsRegion string) (*dynamodb.Clie
 
 func convertPetDetailToDynamoDBItem(petDetail *PetDetail) map[string]types.AttributeValue {
 	item := map[string]types.AttributeValue{
-		"id":          &types.AttributeValueMemberS{Value: petDetail.ID},
 		"companyID":   &types.AttributeValueMemberS{Value: petDetail.CompanyID},
 		"storeID":     &types.AttributeValueMemberS{Value: petDetail.StoreID},
 		"petID":       &types.AttributeValueMemberS{Value: petDetail.PetID},

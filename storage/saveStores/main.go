@@ -11,7 +11,6 @@ import (
 )
 
 type Store struct {
-	ID          string   `json:"id"`
 	CompanyID   string   `json:"companyID"`
 	StoreID     string   `json:"storeID"`
 	StoreName   string   `json:"storeName"`
@@ -34,7 +33,6 @@ func CreateDynamoDBClient(ctx context.Context, awsRegion string) (*dynamodb.Clie
 // convertStoreToDynamoDBItem はStore構造体をDynamoDBのアイテムフォーマットに変換します。
 func convertStoreToDynamoDBItem(store *Store) map[string]types.AttributeValue {
 	item := map[string]types.AttributeValue{
-		"id":         &types.AttributeValueMemberS{Value: store.ID},
 		"companyID":  &types.AttributeValueMemberS{Value: store.CompanyID},
 		"storeID":    &types.AttributeValueMemberS{Value: store.StoreID},
 		"storeName":  &types.AttributeValueMemberS{Value: store.StoreName},
