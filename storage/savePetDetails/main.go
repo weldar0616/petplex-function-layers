@@ -39,8 +39,6 @@ type PetDetail struct {
 	Birthdate   *string  `json:"birthdate"`
 	Images      []string `json:"images"`
 	CrawledUrl  string   `json:"crawledUrl"`
-	CreateDate  string   `json:"createDate"`
-	UpdateDate  string   `json:"updateDate"`
 }
 
 func CreateDynamoDBClient(ctx context.Context, awsRegion string) (*dynamodb.Client, error) {
@@ -61,8 +59,6 @@ func convertPetDetailToDynamoDBItem(petDetail *PetDetail) map[string]types.Attri
 		"priceExTax":  &types.AttributeValueMemberN{Value: fmt.Sprintf("%.2f", petDetail.PriceExTax)},
 		"priceIncTax": &types.AttributeValueMemberN{Value: fmt.Sprintf("%.2f", petDetail.PriceIncTax)},
 		"crawledUrl":  &types.AttributeValueMemberS{Value: petDetail.CrawledUrl},
-		"createDate":  &types.AttributeValueMemberS{Value: petDetail.CreateDate},
-		"updateDate":  &types.AttributeValueMemberS{Value: petDetail.UpdateDate},
 	}
 
 	if petDetail.Father != nil {
