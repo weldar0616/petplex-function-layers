@@ -3,6 +3,7 @@ package savePetDetails
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -24,21 +25,23 @@ const (
 )
 
 type PetDetail struct {
-	CompanyID   string   `json:"companyID"`
-	StoreID     string   `json:"storeID"`
-	PetID       string   `json:"petID"`
-	PetType     PetType  `json:"petType"`
-	Type        string   `json:"type"`
-	PriceExTax  float64  `json:"priceExTax"`
-	PriceIncTax float64  `json:"priceIncTax"`
-	Father      *string  `json:"father"`
-	Mother      *string  `json:"mother"`
-	Color       *string  `json:"color"`
-	Origin      *string  `json:"origin"`
-	Sex         *Sex     `json:"sex"`
-	Birthdate   *string  `json:"birthdate"`
-	Images      []string `json:"images"`
-	CrawledUrl  string   `json:"crawledUrl"`
+	CompanyID   string    `json:"companyID"`
+	StoreID     string    `json:"storeID"`
+	PetID       string    `json:"petID"`
+	PetType     PetType   `json:"petType"`
+	Type        string    `json:"type"`
+	PriceExTax  float64   `json:"priceExTax"`
+	PriceIncTax float64   `json:"priceIncTax"`
+	Father      *string   `json:"father"`
+	Mother      *string   `json:"mother"`
+	Color       *string   `json:"color"`
+	Origin      *string   `json:"origin"`
+	Sex         *Sex      `json:"sex"`
+	Birthdate   *string   `json:"birthdate"`
+	Images      []string  `json:"images"`
+	CrawledUrl  string    `json:"crawledUrl"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 func CreateDynamoDBClient(ctx context.Context, awsRegion string) (*dynamodb.Client, error) {
@@ -59,6 +62,8 @@ func convertPetDetailToDynamoDBItem(petDetail *PetDetail) map[string]types.Attri
 		"priceExTax":  &types.AttributeValueMemberN{Value: fmt.Sprintf("%.2f", petDetail.PriceExTax)},
 		"priceIncTax": &types.AttributeValueMemberN{Value: fmt.Sprintf("%.2f", petDetail.PriceIncTax)},
 		"crawledUrl":  &types.AttributeValueMemberS{Value: petDetail.CrawledUrl},
+		"createdAt":   &types.AttributeValueMemberS{Value: petDetail.CreatedAt.Format(time.RFC3339)},
+		"updatedAt":   &types.AttributeValueMemberS{Value: petDetail.UpdatedAt.Format(time.RFC3339)},
 	}
 
 	if petDetail.Father != nil {

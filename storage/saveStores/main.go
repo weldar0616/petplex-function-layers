@@ -11,14 +11,16 @@ import (
 )
 
 type Store struct {
-	CompanyID   string   `json:"companyID"`
-	StoreID     string   `json:"storeID"`
-	StoreName   string   `json:"storeName"`
-	Address     *string  `json:"address,omitempty"`
-	Coordinates *string  `json:"coordinates,omitempty"`
-	Details     *string  `json:"details,omitempty"`
-	Images      []string `json:"images,omitempty"`
-	CrawledUrl  string   `json:"crawledUrl"`
+	CompanyID   string    `json:"companyID"`
+	StoreID     string    `json:"storeID"`
+	StoreName   string    `json:"storeName"`
+	Address     *string   `json:"address,omitempty"`
+	Coordinates *string   `json:"coordinates,omitempty"`
+	Details     *string   `json:"details,omitempty"`
+	Images      []string  `json:"images,omitempty"`
+	CrawledUrl  string    `json:"crawledUrl"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // CreateDynamoDBClient は指定されたリージョン用の新しいDynamoDBクライアントを作成して返します。
@@ -37,8 +39,8 @@ func convertStoreToDynamoDBItem(store *Store) map[string]types.AttributeValue {
 		"storeID":    &types.AttributeValueMemberS{Value: store.StoreID},
 		"storeName":  &types.AttributeValueMemberS{Value: store.StoreName},
 		"crawledUrl": &types.AttributeValueMemberS{Value: store.CrawledUrl},
-		"createDate": &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339)}, // 作成日時
-		"updateDate": &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339)}, // 更新日時
+		"createdAt":  &types.AttributeValueMemberS{Value: store.CreatedAt.Format(time.RFC3339)},
+		"updatedAt":  &types.AttributeValueMemberS{Value: store.UpdatedAt.Format(time.RFC3339)},
 	}
 
 	// オプショナルフィールド
