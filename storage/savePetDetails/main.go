@@ -25,23 +25,24 @@ const (
 )
 
 type PetDetail struct {
-	CompanyID   string    `json:"companyID"`
-	StoreID     string    `json:"storeID"`
-	PetID       string    `json:"petID"`
-	PetType     PetType   `json:"petType"`
-	Type        string    `json:"type"`
-	PriceExTax  float64   `json:"priceExTax"`
-	PriceIncTax float64   `json:"priceIncTax"`
-	Father      *string   `json:"father"`
-	Mother      *string   `json:"mother"`
-	Color       *string   `json:"color"`
-	Origin      *string   `json:"origin"`
-	Sex         *Sex      `json:"sex"`
-	Birthdate   *string   `json:"birthdate"`
-	Images      []string  `json:"images"`
-	CrawledUrl  string    `json:"crawledUrl"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	CompanyID   string     `json:"companyID"`
+	StoreID     string     `json:"storeID"`
+	PetID       string     `json:"petID"`
+	PetType     PetType    `json:"petType"`
+	Type        string     `json:"type"`
+	PriceExTax  float64    `json:"priceExTax"`
+	PriceIncTax float64    `json:"priceIncTax"`
+	Father      *string    `json:"father"`
+	Mother      *string    `json:"mother"`
+	Color       *string    `json:"color"`
+	Origin      *string    `json:"origin"`
+	Sex         *Sex       `json:"sex"`
+	Birthdate   *string    `json:"birthdate"`
+	Images      []string   `json:"images"`
+	CrawledUrl  string     `json:"crawledUrl"`
+	CreatedAt   time.Time  `json:"createdAt"`
+	UpdatedAt   time.Time  `json:"updatedAt"`
+	DeletedAt   *time.Time `json:"deletedAt"`
 }
 
 func CreateDynamoDBClient(ctx context.Context, awsRegion string) (*dynamodb.Client, error) {
@@ -69,33 +70,30 @@ func convertPetDetailToDynamoDBItem(petDetail *PetDetail) map[string]types.Attri
 	if petDetail.Father != nil {
 		item["father"] = &types.AttributeValueMemberS{Value: *petDetail.Father}
 	}
-
 	if petDetail.Mother != nil {
 		item["mother"] = &types.AttributeValueMemberS{Value: *petDetail.Mother}
 	}
-
 	if petDetail.Color != nil {
 		item["color"] = &types.AttributeValueMemberS{Value: *petDetail.Color}
 	}
-
 	if petDetail.Origin != nil {
 		item["origin"] = &types.AttributeValueMemberS{Value: *petDetail.Origin}
 	}
-
 	if petDetail.Sex != nil {
 		item["sex"] = &types.AttributeValueMemberS{Value: string(*petDetail.Sex)}
 	}
-
 	if petDetail.Birthdate != nil {
 		item["birthdate"] = &types.AttributeValueMemberS{Value: *petDetail.Birthdate}
 	}
-
 	if len(petDetail.Images) > 0 {
 		ssValues := make([]string, len(petDetail.Images))
 		for i, v := range petDetail.Images {
 			ssValues[i] = v
 		}
 		item["images"] = &types.AttributeValueMemberSS{Value: ssValues}
+	}
+	if petDetail.DeletedAt != nil {
+		item["deletedAt"] = &types.AttributeValueMemberS{Value: petDetail.DeletedAt.Format(time.RFC3339)}
 	}
 
 	return item

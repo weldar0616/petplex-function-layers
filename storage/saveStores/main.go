@@ -11,16 +11,17 @@ import (
 )
 
 type Store struct {
-	CompanyID   string    `json:"companyID"`
-	StoreID     string    `json:"storeID"`
-	StoreName   string    `json:"storeName"`
-	Address     *string   `json:"address,omitempty"`
-	Coordinates *string   `json:"coordinates,omitempty"`
-	Details     *string   `json:"details,omitempty"`
-	Images      []string  `json:"images,omitempty"`
-	CrawledUrl  string    `json:"crawledUrl"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	CompanyID   string     `json:"companyID"`
+	StoreID     string     `json:"storeID"`
+	StoreName   string     `json:"storeName"`
+	Address     *string    `json:"address,omitempty"`
+	Coordinates *string    `json:"coordinates,omitempty"`
+	Details     *string    `json:"details,omitempty"`
+	Images      []string   `json:"images,omitempty"`
+	CrawledUrl  string     `json:"crawledUrl"`
+	CreatedAt   time.Time  `json:"createdAt"`
+	UpdatedAt   time.Time  `json:"updatedAt"`
+	DeletedAt   *time.Time `json:"deletedAt"`
 }
 
 // CreateDynamoDBClient は指定されたリージョン用の新しいDynamoDBクライアントを作成して返します。
@@ -59,6 +60,9 @@ func convertStoreToDynamoDBItem(store *Store) map[string]types.AttributeValue {
 			imageValues[i] = img
 		}
 		item["images"] = &types.AttributeValueMemberSS{Value: imageValues}
+	}
+	if store.DeletedAt != nil {
+		item["deletedAt"] = &types.AttributeValueMemberS{Value: store.DeletedAt.Format(time.RFC3339)}
 	}
 
 	return item
